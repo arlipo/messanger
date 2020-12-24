@@ -1,6 +1,7 @@
-import React, { useContext, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import useLocalStorage from '../hooks/useLocalStorage'
 import { useContacts } from './ContactsProvider'
+import { useSocket } from './SocketProvider'
 
 const ConversationsContext = React.createContext()
 
@@ -12,6 +13,7 @@ export function ConversationsProvider({ children, id }) {
     const [conversations, setConversations] = useLocalStorage('conversations', [])
     const [selectedConversationIndex, setSelectedConversationIndex] = useState(0)
     const { contacts } = useContacts()
+    const socket = useSocket()
 
     function createConversation(recipients) {
         setConversations(prevConversations => {
@@ -19,7 +21,7 @@ export function ConversationsProvider({ children, id }) {
         })
     }
 
-    function addMessageToConversation({ recipients, text, sender }) {
+    const addMessageToConversation = useCallback(({ recipients, text, sender }) => {
         setConversations(prevConversations => {
             let madeChanges = false
             const newMessage = { sender, text }
@@ -35,9 +37,20 @@ export function ConversationsProvider({ children, id }) {
                 return [...prevConversations, { recipients, messages: [newMessage] }]
             }
         })
-    }
+    }, [setConversations])
+
+    useEffect(() => {
+        if (socket == null) return
+        
+        socket.on('receive-message', addMessageToConversation)
+
+        return () => socket.off('receive-message')
+    }, [socket, addMessageToConversation])
 
     function sendMessage(recipients, text) {
+        console.log("send message")
+        socket.emit('send-message', { recipients, text })
+
         addMessageToConversation({ recipients, text, sender: id })
     }
 
@@ -55,7 +68,7 @@ export function ConversationsProvider({ children, id }) {
             const sender = message.sender
             const contact = contacts.find(contact => contact.id === sender)
             const name = (contact && contact.name) || sender
-            const fromMe = id === sender 
+            const fromMe = id === sender
 
             return { ...message, fromMe, senderName: name }
         })

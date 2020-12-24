@@ -4,15 +4,18 @@ import DashBoard from './DashBoard'
 import useLocalStorage from '../hooks/useLocalStorage';
 import { ContactsProvider } from '../contexts/ContactsProvider'
 import { ConversationsProvider } from '../contexts/ConversationsProvider'
+import { SocketProvider } from '../contexts/SocketProvider';
 
 function App() {
     const [id, setId] = useLocalStorage('id')
     const dashBoard =
-        <ContactsProvider>
-            <ConversationsProvider id={id}>
-                <DashBoard id={id} />
-            </ConversationsProvider>
-        </ContactsProvider>
+        <SocketProvider id={id}>
+            <ContactsProvider>
+                <ConversationsProvider id={id}>
+                    <DashBoard id={id} />
+                </ConversationsProvider>
+            </ContactsProvider>
+        </SocketProvider>
 
     return (
         <>
