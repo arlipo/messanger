@@ -32,7 +32,7 @@ export default function OpenConversation() {
                             <div
                                 ref={selectedConversation.messages.length - 1 === index ? setRef : null}
                                 key={index}
-                                className={`my-1 d-flex flex-column ${message.fromMe ? 'align-self-end' : ''}`}>
+                                className={`my-1 d-flex flex-column ${message.fromMe ? 'align-self-end ml-5' : 'align-items-start mr-5'}`}>
                                 <div
                                     className={`rounded px-2 py-1 ${message.fromMe ? 'bg-primary text-white' : 'border'}`}>
                                     {message.text}
